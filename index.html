@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>مساعد الامتحان المفتوح</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d1117">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<style>
+:root{
+  --bg:#0d1117; --bg2:#161b22; --bg3:#1f2630; --line:#2a3441;
+  --fg:#e6edf3; --muted:#9aa7b4; --acc:#2f81f7; --acc2:#3fb950;
+  --warn:#d29922; --err:#f85149; --radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--fg); font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;
+  font-size:16px; line-height:1.75; padding-bottom:env(safe-area-inset-bottom);
+}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.wrap{max-width:820px;margin:0 auto;padding:0 14px}
+
+/* ===== header ===== */
+header{
+  position:sticky;top:0;z-index:50;background:rgba(13,17,23,.94);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+}
+.hrow{display:flex;align-items:center;gap:10px;padding:10px 0}
+.logo{font-size:19px;font-weight:700;flex:1}
+.logo small{display:block;font-size:11px;font-weight:400;color:var(--muted);line-height:1.2}
+.pill{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.ok{color:var(--acc2);border-color:#1c4a2e}
+.pill.bad{color:var(--err);border-color:#5a2323}
+.icon-btn{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:13px}
+
+/* ===== tabs ===== */
+nav{display:flex;gap:6px;padding:8px 0 10px}
+nav button{flex:1;padding:9px 4px;border-radius:11px;background:var(--bg2);border:1px solid var(--line);color:var(--muted);font-size:14px;font-weight:600}
+nav button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.panel{display:none;padding-bottom:90px}
+.panel.on{display:block}
+
+/* ===== cards ===== */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 10px;font-size:16px}
+.hint{color:var(--muted);font-size:13px;margin:-4px 0 10px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 5px}
+input[type=text],input[type=password],input[type=number],textarea,select{
+  width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--acc)}
+textarea{resize:vertical;min-height:110px;line-height:1.7}
+.btn{background:var(--acc);color:#fff;border-radius:11px;padding:11px 16px;font-weight:700;width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:var(--bg3);border:1px solid var(--line);color:var(--fg);font-weight:600}
+.btn.sm{width:auto;padding:7px 12px;font-size:13px}
+.btn.row{display:flex;gap:8px}
+.btn.row>*{flex:1}
+.btn.danger{background:transparent;border:1px solid #5a2323;color:var(--err)}
+
+/* ===== unit list ===== */
+.unit{display:flex;gap:10px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--bg3)}
+.unit .nm{flex:1;min-width:0}
+.unit .nm b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unit .nm span{font-size:12px;color:var(--muted)}
+.x{background:transparent;color:var(--err);font-size:19px;padding:4px 8px;border-radius:8px}
+.badge{font-size:11px;background:#1f3550;color:#8cc2ff;padding:2px 8px;border-radius:999px}
+
+/* ===== ask tab ===== */
+.cam{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.cam button{padding:16px 8px;border-radius:var(--radius);border:1px dashed var(--line);background:var(--bg2);font-size:15px;font-weight:700;display:block}
+.cam button span{display:block;font-size:26px;margin-bottom:4px}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.thumbs figure{margin:0;position:relative}
+.thumbs img{width:84px;height:112px;object-fit:cover;border-radius:9px;border:1px solid var(--line);display:block}
+.thumbs figcaption{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(0,0,0,.45);border-radius:9px;cursor:pointer}
+.q{border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:9px;background:var(--bg2);display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.q.sel{border-color:var(--acc);background:#13233a}
+.q .txt{flex:1;font-size:15px;white-space:pre-wrap}
+.q .box{width:20px;height:20px;border:2px solid var(--line);border-radius:6px;flex:none;margin-top:3px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.q.sel .box{background:var(--acc);border-color:var(--acc)}
+.ans{white-space:pre-wrap;background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:13px;font-size:15.5px;min-height:40px}
+.src{border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:8px;background:var(--bg3)}
+.src b{font-size:13px;color:#8cc2ff;display:block;margin-bottom:3px}
+.src p{margin:0;font-size:14px;color:#c9d5e0;white-space:pre-wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{font-size:12px;background:#1f3550;color:#8cc2ff;border-radius:999px;padding:3px 10px}
+.progress{height:6px;background:var(--bg3);border-radius:999px;overflow:hidden;margin-top:9px}
+.progress i{display:block;height:100%;background:var(--acc);width:0;transition:width .2s}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:78px;z-index:200;display:none;
+  background:#21262d;border:1px solid var(--line);border-left:3px solid var(--acc);color:var(--fg);
+  padding:11px 16px;border-radius:11px;max-width:90vw;font-size:14px;box-shadow:0 8px 26px rgba(0,0,0,.5)}
+#toast.err{border-left-color:var(--err)}
+#toast.ok{border-left-color:var(--acc2)}
+.bar{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(13,17,23,.96);border-top:1px solid var(--line);padding:10px 14px env(safe-area-inset-bottom)}
+.bar .wrap{display:flex;gap:8px}
+.bar .wrap .btn{margin:0}
+.log{font-size:12px;color:var(--muted);margin-top:8px;white-space:pre-wrap}
+.empty{text-align:center;color:var(--muted);padding:26px 10px;font-size:14px}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid #ffffff44;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-left:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hidden-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.filepick{display:flex;gap:9px;align-items:center;margin-top:6px}
+.pick{width:auto;padding:9px 15px;display:inline-block;cursor:pointer}
+.fname{font-size:12.5px;color:var(--muted);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tog{display:flex;gap:6px;background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:3px;margin-top:6px}
+.tog button{flex:1;padding:7px;border-radius:8px;font-size:13px;color:var(--muted)}
+.tog button.on{background:var(--acc);color:#fff;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="hrow">
+      <div class="logo">📚 مساعد الامتحان المفتوح
+        <small>أدخل وحداتك ← صوّر ورقة الاختبار ← اجيب من وحداتك فقط</small>
+      </div>
+      <span class="pill" id="statusPill">غير مهيّأ</span>
+    </div>
+    <nav>
+      <button data-tab="units" class="on">الوحدات</button>
+      <button data-tab="ask">المساعد</button>
+      <button data-tab="settings">الإعدادات</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ================= الوحدات ================= -->
+  <section class="panel on" id="panel-units">
+    <div class="card">
+      <h3>➕ إضافة وحدة دراسية</h3>
+      <p class="hint">كل وحدة = ملف واحد (PDF/Word/صورة) أو نص. سيُقرأ المحتوى ويُقسَّم ويُفهرس للبحث.</p>
+      <label>اسم الوحدة / الفصل (مهم — سيظهر في الاستشهادات)</label>
+      <input type="text" id="unitName" placeholder="مثال: الوحدة الثانية — stoichiometry">
+
+      <label>الملف (PDF / Word / نص / صورة)</label>
+      <div class="filepick">
+        <input type="file" id="unitFile" accept=".pdf,.docx,.txt,.md,.csv,.png,.jpg,.jpeg,.webp" class="hidden-input">
+        <label for="unitFile" class="btn ghost pick">📎 اختر ملفاً</label>
+        <span class="fname" id="fileName">لم يُحدَّد ملف</span>
+      </div>
+
+      <label>أو الصق النص مباشرة</label>
+      <textarea id="unitText" placeholder="الصق هنا محتوى الوحدة..."></textarea>
+
+      <div class="row" style="margin-top:12px">
+        <button class="btn" id="btnIngest">📥 فهرسة الوحدة</button>
+        <button class="btn ghost" id="btnSample" style="flex:0 0 auto">تجربة سريعة</button>
+      </div>
+      <div class="progress" id="ingProgress" style="display:none"><i></i></div>
+      <div class="log" id="ingLog"></div>
+    </div>
+
+    <div class="card">
+      <h3>📚 وحدتي</h3>
+      <div id="unitsList"></div>
+    </div>
+  </section>
+
+  <!-- ================= المساعد ================= -->
+  <section class="panel" id="panel-ask">
+    <div class="card">
+      <h3>📷 صوّر ورقة الاختبار</h3>
+      <p class="hint">النموذج يقرأ الأسئلة (مطبوع أو بخط اليد) ثم يجيب من وحداتك المسجّلة فقط.</p>
+      <div class="cam">
+        <button id="btnCam"><span>📸</span>تصوير بالكاميرا</button>
+        <button id="btnGal"><span>🖼️</span>من المعرض</button>
+      </div>
+      <input type="file" id="camFile" accept="image/*" capture="environment" hidden>
+      <input type="file" id="galFile" accept="image/*" multiple hidden>
+      <div class="thumbs" id="thumbs"></div>
+      <button class="btn" id="btnExtract" disabled>🔎 استخراج الأسئلة</button>
+      <div class="progress" id="exProgress" style="display:none"><i></i></div>
+      <div class="log" id="exLog"></div>
+    </div>
+
+    <div class="card" id="qCard" style="display:none">
+      <h3>❓ الأسئلة المستخرجة</h3>
+      <div id="qList"></div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn" id="btnAnswer" disabled>📝 أجب عن المحدد</button>
+        <button class="btn ghost sm" id="btnAll" style="flex:0 0 auto">تحديد الكل</button>
+      </div>
+      <label style="margin-top:12px">توفير الحصة (مهم على الطبقة المجانية)</label>
+      <div class="tog" id="batchTog">
+        <button data-batch="0" class="on">إجابة سؤالاً بسؤال</button>
+        <button data-batch="1">كل الأسئلة في طلب واحد</button>
+      </div>
+      <p class="hint" style="margin-top:5px">الوضع المجمّع يستهلك طلباً واحداً بدل عدة طلبات — مهم إذا كان مفتاحك على الحصة المجانية.</p>
+    </div>
+
+    <div class="card" id="ansCard" style="display:none">
+      <h3>💡 الإجابة</h3>
+      <div class="chips" id="ansChips"></div>
+      <div class="ans" id="ansText"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn ghost sm" id="btnCopy" style="flex:1">📋 نسخ الإجابة</button>
+        <button class="btn ghost sm" id="btnAgain" style="flex:1">🔄 إعادة صياغة</button>
+      </div>
+      <h3 style="margin-top:16px;font-size:15px">📌 المقتطفات المستخدمة من وحداتك</h3>
+      <div id="srcList"></div>
+      <label>اسأل متابعة</label>
+      <div class="row">
+        <input type="text" id="followUp" placeholder="مثال: اشرح الفقرة الثانية بشكل أبسط" style="flex:1">
+        <button class="btn sm" id="btnFollow" style="flex:0 0 auto">إرسال</button>
+      </div>
+      <div class="ans" id="followAns" style="margin-top:9px"></div>
+    </div>
+  </section>
+
+  <!-- ================= الإعدادات ================= -->
+  <section class="panel" id="panel-settings">
+    <div class="card">
+      <h3>🔑 مزوّد الذكاء الاصطناعي</h3>
+      <label>المزوّد</label>
+      <select id="prov">
+        <option value="gemini">Google Gemini (الأفضل للعربية والخط اليدوي)</option>
+        <option value="openai">OpenAI أو أي واجهة متوافقة</option>
+      </select>
+      <label>مفتاح API</label>
+      <input type="password" id="apiKey" placeholder="AIza... / sk-..." autocomplete="off">
+      <p class="hint">يُحفظ المفتاح في متصفحك فقط (localStorage) ولا يُرسل لأي جهة أخرى غير مزوّد النموذج. للحصول على مفتاح Gemini مجاني: aistudio.google.com</p>
+      <div id="openaiOnly" style="display:none">
+        <label>عنوان الواجهة (Base URL)</label>
+        <input type="text" id="baseUrl" value="https://api.openai.com/v1" dir="ltr">
+      </div>
+      <label>موديل المحادثة والرؤية (قراءة الصور)</label>
+      <input type="text" id="chatModel" dir="ltr">
+      <label>نماذج احتياطية (تُستخدم تلقائياً عند ازدحام النموذج 503)</label>
+      <input type="text" id="fallbackModels" dir="ltr" placeholder="gemini-3.8-flash, gemini-3.5-flash-lite">
+      <label>موديل التضمين (للبحث الدلالي)</label>
+      <input type="text" id="embedModel" dir="ltr">
+      <label>نماذج تضمين احتياطية</label>
+      <input type="text" id="fallbackEmbedModels" dir="ltr" placeholder="gemini-embedding-001">
+      <label>عدد المحاولات لكل نموذج (تراجع تصاعدي)</label>
+      <input type="number" id="maxRetries" min="1" max="8" value="5">
+      <label>أبعاد التضمين</label>
+      <select id="dims">
+        <option value="768">768 (سريع، كافٍ تماماً)</option>
+        <option value="1536">1536 (أدق)</option>
+        <option value="3072">3072 (أدق، مساحة أكبر)</option>
+      </select>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost sm" id="btnTest" style="flex:1">🧪 اختبار الاتصال</button>
+        <button class="btn ghost sm" id="btnListModels" style="flex:1">🔍 النماذج المتاحة لمفتاحك</button>
+      </div>
+      <div class="log" id="testLog"></div>
+      <div class="log" id="modelsLog"></div>
+    </div>
+
+    <div class="card">
+      <h3>⚙️ سلوك الإجابة</h3>
+      <label>عدد المقتطفات المُسترجعة لكل سؤال</label>
+      <input type="number" id="topK" min="2" max="12" value="6">
+      <label>أسلوب الإجابة</label>
+      <div class="tog" id="lenTog">
+        <button data-len="full" class="on">مفصّلة</button>
+        <button data-len="short">مختصرة (أسرع في الكتابة)</button>
+        <button data-len="steps">خطوات منطقية</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💾 النسخ الاحتياطي</h3>
+      <p class="hint">الوحدات مخزّنة داخل متصفحك. خذ نسخة احتياطية قبل حذف بيانات المتصفح.</p>
+      <div class="row">
+        <button class="btn ghost sm" id="btnExport" style="flex:1">⬇ تصدير نسخة</button>
+        <button class="btn ghost sm" id="btnImport" style="flex:1">⬆ استيراد نسخة</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" hidden>
+      <button class="btn danger sm" id="btnWipe" style="margin-top:10px;width:100%">🗑️ حذف كل الوحدات</button>
+    </div>
+
+    <div class="card">
+      <h3>❓ كيف يعمل؟</h3>
+      <p style="font-size:14px;color:var(--muted);margin:0">
+        <b style="color:var(--fg)">1.</b> تُقسَّم كل وحدة إلى مقاطع صغيرة، ويُحسب لكل مقطع «بصمة دلالية» (embedding) تُخزَّن محلياً.<br>
+        <b style="color:var(--fg)">2.</b> عند تصوير الاختبار، يقرأ النموذج الأسئلة نصياً.<br>
+        <b style="color:var(--fg)">3.</b> يُطابَق السؤال مع المقاطع الأقرب في وحداتك.<br>
+        <b style="color:var(--fg)">4.</b> يُولَّد الإجابة من هذه المقاطع فقط، مع رقم لكل مقطع.<br>
+        <b style="color:var(--fg)">5.</b> إن لم يوجد جواب في وحداتك، يقول التطبيق ذلك صراحةً بدل أن يخترع إجابة.
+      </p>
+    </div>
+  </section>
+</div>
+
+<div class="bar" id="bar">
+  <div class="wrap">
+    <button class="btn ghost" id="btnGoAsk" style="flex:0 0 auto">🎯 الذهاب إلى المساعد</button>
+    <button class="btn" id="btnQuick" style="flex:1">⚡ اسأل مباشرة (نص)</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =====================================================================
+   مساعد الامتحان المفتوح — تطبيق صفحة واحدة، بدون أي مكتبات خارجية.
+   كل البيانات (الوحدات، المقاطع، المحادثة) تُخزَّن في متصفحك (IndexedDB).
+   ===================================================================== */
+
+/* ------------------------------ أدوات عامة ------------------------------ */
+const $  = (s, r=document)=> r.querySelector(s);
+const $$ = (s, r=document)=> Array.from(r.querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const clamp = (n,a,b)=> Math.min(b, Math.max(a,n));
+
+function toast(msg, kind=''){
+  const t = $('#toast');
+  t.textContent = msg; t.className = kind; t.style.display='block';
+  clearTimeout(t._t); t._t = setTimeout(()=> t.style.display='none', kind==='err'?7000:3200);
+}
+function setProg(id, pct){
+  const p = $(id); if(!p) return;
+  if(pct===null){ p.style.display='none'; return; }
+  p.style.display='block'; p.querySelector('i').style.width = clamp(pct,0,100)+'%';
+}
+
+/* ------------------------------ التخزين ------------------------------ */
+const DB_NAME='openbook_db', DB_VER=1;
+let _db=null;
+function openDB(){
+  if(_db) return Promise.resolve(_db);
+  return new Promise((res,rej)=>{
+    const rq = indexedDB.open(DB_NAME, DB_VER);
+    rq.onupgradeneeded = ()=>{
+      const db = rq.result;
+      if(!db.objectStoreNames.contains('units'))  db.createObjectStore('units', {keyPath:'id'});
+      if(!db.objectStoreNames.contains('chunks')){ const s=db.createObjectStore('chunks',{keyPath:'id'}); s.createIndex('unitId','unitId'); }
+      if(!db.objectStoreNames.contains('chat'))   db.createObjectStore('chat',{keyPath:'id'});
+    };
+    rq.onsuccess = ()=>{ _db = rq.result; res(_db); };
+    rq.onerror   = ()=> rej(rq.error);
+  });
+}
+function store(name){ return openDB().then(db=> db.transaction(name,'readonly').objectStore(name)); }
+function storeRW(name){ return openDB().then(db=> db.transaction(name,'readwrite').objectStore(name)); }
+function idbGetAll(name){ return store(name).then(s=> new Promise((res,rej)=>{ const q=s.getAll(); q.onsuccess=()=>res(q.result||[]); q.onerror=()=>rej(q.error); })); }
+function idbPut(name, val){ return storeRW(name).then(s=> new Promise((res,rej)=>{ const q=s.put(val); q.onsuccess=()=>res(val); q.onerror=()=>rej(q.error); })); }
+function idbPutMany(name, vals){
+  if(!vals || !vals.length) return Promise.resolve(0);
+  return openDB().then(db=> new Promise((res,rej)=>{
+    const t = db.transaction(name,'readwrite');
+    const s = t.objectStore(name);
+    for(const v of vals) s.put(v);
+    t.oncomplete = ()=> res(vals.length);
+    t.onerror = ()=> rej(t.error);
+    t.onabort = ()=> rej(t.error||new Error('aborted'));
+  }));
+}
+function idbDel(name, key){ return storeRW(name).then(s=> new Promise((res,rej)=>{ const q=s.delete(key); q.onsuccess=()=>res(true); q.onerror=()=>rej(q.error); })); }
+function idbClear(name){ return storeRW(name).then(s=> new Promise((res,rej)=>{ const q=s.clear(); q.onsuccess=()=>res(true); q.onerror=()=>rej(q.error); })); }
+function idbDeleteByUnit(unitId){
+  return storeRW('chunks').then(s=> new Promise((res,rej)=>{
+    const out=[];
+    s.openCursor().onsuccess = ev=>{
+      const c = ev.target.result;
+      if(!c){ res(out); return; }
+      if(c.value.unitId===unitId) out.push(c.value.id);
+      c.delete(); c.continue();
+    };
+    s.transaction.onerror = ()=>rej(s.transaction.error);
+  }));
+}
+
+/* ------------------------------ الإعدادات ------------------------------ */
+const SKEY='openbook_settings_v1';
+const DEFAULTS = {
+  provider:'gemini',
+  apiKey:'',
+  baseUrl:'https://api.openai.com/v1',
+  chatModel:'gemini-4-hydrogen',
+  embedModel:'gemini-embedding-2',
+  fallbackModels:'gemini-3.8-flash, gemini-3.5-flash-lite, gemini-2.5-flash-lite',
+  fallbackEmbedModels:'gemini-embedding-001',
+  maxRetries:5,
+  dims:768,
+  topK:6,
+  answerLen:'full',
+  batchAnswer:false
+};
+let SET = {...DEFAULTS};
+function loadSettings(){
+  try{ const raw = localStorage.getItem(SKEY); if(raw) SET = {...DEFAULTS, ...JSON.parse(raw)}; }catch(e){}
+  applySettingsToUI();
+}
+function saveSettings(){ try{ localStorage.setItem(SKEY, JSON.stringify(SET)); }catch(e){} }
+function applySettingsToUI(){
+  $('#prov').value = SET.provider;
+  $('#apiKey').value = SET.apiKey;
+  $('#baseUrl').value = SET.baseUrl;
+  $('#chatModel').value = SET.chatModel;
+  $('#embedModel').value = SET.embedModel;
+  $('#fallbackModels').value = SET.fallbackModels || '';
+  $('#fallbackEmbedModels').value = SET.fallbackEmbedModels || '';
+  $('#maxRetries').value = SET.maxRetries;
+  $('#dims').value = String(SET.dims);
+  $('#topK').value = SET.topK;
+  $('#openaiOnly').style.display = SET.provider==='openai' ? 'block':'none';
+  $$('#lenTog button').forEach(b=> b.classList.toggle('on', b.dataset.len===SET.answerLen));
+  $$('#batchTog button').forEach(b=> b.classList.toggle('on', (b.dataset.batch==='1')===!!SET.batchAnswer));
+  updateStatus();
+}
+function updateStatus(){
+  const p = $('#statusPill');
+  if(!SET.apiKey){ p.textContent='بلا مفتاح'; p.className='pill bad'; return; }
+  p.textContent = SET.provider==='gemini' ? 'Gemini · '+SET.chatModel : 'OpenAI · '+SET.chatModel;
+  p.className='pill ok';
+}
+
+/* ------------------------------ معالجة النصوص العربية ------------------------------ */
+const AR_STOP = new Set(('من في على الى عن مع هذا هذه ذلك تلك التي الذي ما لا ان أن كان كانت يكون تكون هو هي هم '
+ +'كل بعض غير بين قد ثم حتى او أم إذا إن عند لدى بعد قبل كما لكن لأن كي هل و ف ب ل ك ا يا').split(/\s+/));
+function normAr(s){
+  return String(s||'')
+    .replace(/[\u064B-\u0652\u0670\u0640]/g,'')            // تشكيل + تطويل
+    .replace(/[إأآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ئ/g,'ي')
+    .replace(/ؤ/g,'و').replace(/ة/g,'ه')
+    .replace(/[^\p{L}\p{N}\s]/gu,' ')
+    .replace(/\s+/g,' ').trim().toLowerCase();
+}
+function tokens(s){ return normAr(s).split(' ').filter(t=> t.length>2 && !AR_STOP.has(t)); }
+
+/* ------------------------------ تقسيم الوحدة إلى مقاطع ------------------------------ */
+function splitSections(text){
+  const lines = String(text||'').split(/\r?\n/);
+  const sections=[]; let cur={title:'(بدون عنوان)', lines:[]};
+  const isHeading = (l)=>{
+    const t=l.trim();
+    if(!t || t.length>140) return false;
+    if(/^#{1,4}\s+\S/.test(t)) return true;
+    if(/^(الوحدة|وحدة|الفصل|فصل|الباب|باب|المحاضرة|محاضرة|الدرس|درس)\b/.test(t)) return true;
+    if(/^\d{1,2}[\.\-\)]\s+\S/.test(t) && t.length<80) return true;
+    if(/^[IVXLC]{1,5}[\.\)]\s+\S/.test(t)) return true;
+    return false;
+  };
+  for(const line of lines){
+    if(isHeading(line)){
+      if(cur.lines.join('\n').trim()) sections.push(cur);
+      cur = {title: line.replace(/^#+\s*/,'').trim().slice(0,120), lines:[]};
+    } else cur.lines.push(line);
+  }
+  if(cur.lines.join('\n').trim()) sections.push(cur);
+  return sections.length? sections : [{title:'(بدون عنوان)', lines:String(text||'').split(/\r?\n/)}];
+}
+function chunkText(text, target=800, overlap=120){
+  const chunks=[];
+  for(const sec of splitSections(text)){
+    const paras = sec.lines.join('\n').split(/\n{2,}/).map(p=>p.trim()).filter(Boolean);
+    let buf='';
+    const flush=()=>{ if(buf.trim().length>40) chunks.push({section:sec.title, text:buf.trim()}); buf=''; };
+    for(const p of paras){
+      if((buf+'\n\n'+p).length <= target){ buf = buf? buf+'\n\n'+p : p; }
+      else {
+        flush();
+        if(p.length>target){                                   // فقرة طويلة: قسّمها بإزاحة
+          for(let i=0;i<p.length;i+=target-overlap){
+            const piece = p.slice(i, i+target);
+            if(piece.trim().length>40) chunks.push({section:sec.title, text:piece.trim()});
+          }
+        } else {
+          buf = p;
+        }
+      }
+    }
+    flush();
+  }
+  if(!chunks.length && String(text||'').trim()) chunks.push({section:'(نص)', text:String(text).trim()});
+  return chunks;
+}
+
+/* ------------------------------ نداءات النموذج ------------------------------ */
+function gemUrl(model, action){ return `https://generativelanguage.googleapis.com/v1beta/models/${model}:${action}`; }
+function oaUrl(path){ return SET.baseUrl.replace(/\/+$/,'') + path; }
+function authHeaders(){
+  if(SET.provider==='gemini') return {'x-goog-api-key': SET.apiKey, 'Content-Type':'application/json'};
+  return {'Authorization':'Bearer '+SET.apiKey, 'Content-Type':'application/json'};
+}
+function assertKey(){ if(!SET.apiKey) throw new Error('أضف مفتاح API من تبويب الإعدادات أولاً.'); }
+
+class ApiError extends Error{
+  constructor(message, status, body){ super(message); this.status = status||0; this.body = body||''; }
+}
+/* أخطاء مؤقتة تستحق إعادة المحاولة (توصية Google الرسمية) */
+function isTransient(status){
+  return [0, 408, 429, 500, 502, 503, 504].includes(Number(status));
+}
+function isFatal(status){
+  return [400, 401, 403].includes(Number(status));
+}
+const sleep = ms => new Promise(r=> setTimeout(r, ms));
+function backoff(attempt, retryAfterSec){
+  if(retryAfterSec && retryAfterSec > 0 && retryAfterSec < 120) return retryAfterSec*1000;
+  const base = Math.min(30000, 1500 * Math.pow(2, attempt));   // 1.5s, 3s, 6s, 12s, 24s
+  return base + Math.random()*700;                              // jitter
+}
+let NOTIFY = ()=>{};                                            // قناة تحديث الحالة للواجهة
+
+async function apiError(res){
+  let detail='', retryAfter=0;
+  try{
+    const j = await res.json();
+    detail = JSON.stringify(j.error||j);
+    const m = detail.match(/"retryAfter"\s*:\s*"?(\d+)/); if(m) retryAfter = +m[1];
+    const m2 = detail.match(/"retryDelay"\s*:\s*"?([\d.]+m?)/);
+    if(m2 && !retryAfter){ const v=m2[1]; retryAfter = v.endsWith('m') ? parseFloat(v)*60 : parseFloat(v); }
+  }catch(e){
+    try{ detail = (await res.text()).slice(0,300); }catch(e2){}
+  }
+  const hdr = res.headers && res.headers.get ? res.headers.get('retry-after') : null;
+  if(hdr && !retryAfter){ const n = parseInt(hdr,10); if(!isNaN(n)) retryAfter = n; }
+  const e = new ApiError(`HTTP ${res.status} — ${detail||res.statusText}`, res.status, detail);
+  e.retryAfter = retryAfter;
+  return e;
+}
+/* رسائل عربية مفهومة بدل JSON خام */
+function friendlyError(err){
+  const s = err && err.status, msg = (err && err.message) || String(err||'');
+  if(s===503 || /high demand|UNAVAILABLE|overloaded/i.test(msg))
+    return 'الخدمة مزدحمة الآن على نموذج Google (خطأ 503 مؤقت — ليس خطأ منك). أعيد المحاولة تلقائياً وتُبدَّل النماذج الاحتياطية؛ إن استمر فجّّل قليلاً أو فعّل خطة Blaze.';
+  if(s===429 || /RESOURCE_EXHAUSTED|quota/i.test(msg))
+    return 'انتهت حصة الطلبات (429). على الطبقة المجانية الحد يومي صغير جداً — فعّل الفوترة (Blaze) في AI Studio، أو قلّل عدد الأسئلة دفعة واحدة.';
+  if(s===403 || /PERMISSION_DENIED/i.test(msg))
+    return 'رُفض المفتاح (403). تأكد من صحة مفتاح API ومن أن المشروع مفعّل به Generative Language API.';
+  if(s===401) return 'المفتاح غير صالح (401). انسخه مرة أخرى من AI Studio.';
+  if(s===404) return 'اسم النموذج غير متاح (404). بدّله من الإعدادات أو استخدم قائمة «النماذج المتاحة لمفتاحك».';
+  if(s===400) return 'طلب غير صالح (400). جرّب ملفاً أصغر أو أعد صياغة السؤال.';
+  if(s===0)   return 'تعذّر الوصول إلى الإنترنت أو الخدمة. تحقّق من الاتصال ثم أعد المحاولة.';
+  return msg.length>300 ? msg.slice(0,300)+'…' : msg;
+}
+/* سلسلة النماذج: الأساسي ثم الاحتياطية (بدون تكرار) */
+function chatModelChain(){
+  const extra = String(SET.fallbackModels||'').split(',').map(s=>s.trim()).filter(Boolean);
+  return [...new Set([SET.chatModel, ...extra])];
+}
+function embedModelChain(){
+  const extra = String(SET.fallbackEmbedModels||'').split(',').map(s=>s.trim()).filter(Boolean);
+  return [...new Set([SET.embedModel, ...extra])];
+}
+
+/* نداء موحّد مع إعادة محاولة تصاعدية + تبديل نموذج */
+async function gemCall(action, body, opts={}){
+  const models = (opts.models && opts.models.length) ? opts.models : [SET.chatModel];
+  const maxTry = clamp(Number(SET.maxRetries)||5, 1, 8);
+  let lastErr = null;
+  for(let mi=0; mi<models.length; mi++){
+    const model = models[mi];
+    for(let attempt=0; attempt<maxTry; attempt++){
+      try{
+        const res = await fetch(gemUrl(model, action) + (opts.query||''), {
+          method:'POST', headers: authHeaders(), body: JSON.stringify(body)
+        });
+        if(res.ok){
+          SET.lastUsedModel = model;
+          if(opts.consume) return await opts.consume(res, model);
+          return {res, model};
+        }
+        const err = await apiError(res);
+        lastErr = err;
+        if(isFatal(err.status)) throw err;                 // 400/401/403: لا معنى لإعادة المحاولة
+        if(err.status===404) break;                        // هذا النموذج غير متاح: جرّب التالي
+        if(!isTransient(err.status)) throw err;
+        if(attempt < maxTry-1){
+          NOTIFY('⚠️ الخدمة مزدحمة ('+err.status+') — إعادة المحاولة '+(attempt+1)+'/'+maxTry+' مع «'+model+'»…');
+          await sleep(backoff(attempt, err.retryAfter));
+          continue;
+        }
+        break; // نفدت محاولات هذا النموذج → التالي
+      }catch(e){
+        if(e instanceof ApiError && isFatal(e.status)) throw e;
+        lastErr = (e instanceof ApiError) ? e : new ApiError('تعذّر الاتصال بالشبكة: '+e.message, 0);
+        if(e instanceof ApiError && e.status===404) break;
+        if(attempt < maxTry-1){
+          NOTIFY('⚠️ فشل الاتصال — إعادة المحاولة '+(attempt+1)+'/'+maxTry+'…');
+          await sleep(backoff(attempt));
+          continue;
+        }
+        break;
+      }
+    }
+  }
+  throw lastErr || new ApiError('تعذّر الحصول على رد من النموذج.', 0);
+}
+
+/* --- محادثة (تدفّق نصي) --- */
+async function chatStream({system, parts, onDelta}){
+  assertKey();
+  if(SET.provider==='gemini'){
+    const body = {
+      systemInstruction:{parts:[{text:system||''}]},
+      contents:[{role:'user', parts: parts.map(p=> p.type==='image'
+        ? {inlineData:{mimeType:p.mimeType, data:p.data}}
+        : {text:p.text}) }],
+      generationConfig:{temperature:0.15, maxOutputTokens:8192}
+    };
+    return await gemCall('streamGenerateContent', body, {
+      models: chatModelChain(), query:'?alt=sse',
+      consume: async (res)=>{
+        let full='';
+        await readSSE(res, (obj)=>{
+          const c = obj?.candidates?.[0];
+          const t = (c?.content?.parts||[]).map(p=>p.text||'').join('');
+          if(t){ full+=t; onDelta && onDelta(t); }
+        });
+        if(!full) throw new ApiError('انتهى البث دون محتوى.', 0);
+        return full;
+      }
+    });
+  }
+  // OpenAI-compatible
+  const content = parts.map(p=> p.type==='image'
+    ? {type:'image_url', image_url:{url:`data:${p.mimeType};base64,${p.data}`}}
+    : {type:'text', text:p.text});
+  const body = {
+    model: SET.chatModel,
+    messages:[...(system?[{role:'system',content:system}]:[]), {role:'user', content}],
+    temperature:0.15, max_tokens:6000, stream:true
+  };
+  return await oaCall('/chat/completions', body, async (res)=>{
+    let full='';
+    await readSSE(res,(obj)=>{
+      const d = obj?.choices?.[0]?.delta?.content;
+      if(d){ full+=d; onDelta && onDelta(d); }
+    });
+    if(!full) throw new ApiError('انتهى البث دون محتوى.', 0);
+    return full;
+  });
+}
+
+/* --- نداءات OpenAI-compatibles مع إعادة محاولة --- */
+async function oaCall(path, body, consume){
+  const maxTry = clamp(Number(SET.maxRetries)||5, 1, 8);
+  let lastErr = null;
+  for(let attempt=0; attempt<maxTry; attempt++){
+    try{
+      const res = await fetch(oaUrl(path), {method:'POST', headers:authHeaders(), body:JSON.stringify(body)});
+      if(res.ok) return await consume(res);
+      const err = await apiError(res); lastErr = err;
+      if(isFatal(err.status)) throw err;
+      if(!isTransient(err.status)) throw err;
+      if(attempt<maxTry-1){
+        NOTIFY('⚠️ الخدمة مزدحمة ('+err.status+') — إعادة المحاولة '+(attempt+1)+'/'+maxTry+'…');
+        await sleep(backoff(attempt, err.retryAfter)); continue;
+      }
+      break;
+    }catch(e){
+      if(e instanceof ApiError && isFatal(e.status)) throw e;
+      lastErr = (e instanceof ApiError)? e : new ApiError('تعذّر الاتصال: '+e.message, 0);
+      if(attempt<maxTry-1){ await sleep(backoff(attempt)); continue; }
+      break;
+    }
+  }
+  throw lastErr || new ApiError('فشل الطلب.', 0);
+}
+
+async function readSSE(res, onObj){
+  if(!res.body){ onObj({}); return; }
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf='';
+  while(true){
+    const {done, value} = await reader.read();
+    if(done) break;
+    buf += dec.decode(value, {stream:true});
+    let idx;
+    while((idx = buf.indexOf('\n')) >= 0){
+      const line = buf.slice(0, idx).trim(); buf = buf.slice(idx+1);
+      if(!line || line.startsWith(':')) continue;
+      if(line.startsWith('data:')){
+        const payload = line.slice(5).trim();
+        if(payload === '[DONE]') return;
+        try{ onObj(JSON.parse(payload)); }catch(e){}
+      }
+    }
+  }
+}
+
+/* --- تضمين (embeddings) --- */
+function l2norm(v){ let s=0; for(const x of v) s+=x*x; const n=Math.sqrt(s)||1; return Float32Array.from(v, x=>x/n); }
+
+async function embedOne(text){
+  if(SET.provider==='gemini'){
+    const body = { model:'models/'+SET.embedModel, content:{parts:[{text}]} };
+    if(/embedding-(2|001)/.test(SET.embedModel)) body.outputDimensionality = Number(SET.dims);
+    return await gemCall('embedContent', body, {
+      models: embedModelChain(),
+      consume: async (res)=>{
+        const j = await res.json();
+        const vals = j?.embedding?.values;
+        if(!Array.isArray(vals)) throw new ApiError('استجابة تضمين غير متوقعة من النموذج.', 0);
+        return l2norm(vals);
+      }
+    });
+  }
+  return await oaCall('/embeddings', {model: SET.embedModel, input:text}, async (res)=>{
+    const j = await res.json();
+    const vals = j?.data?.[0]?.embedding;
+    if(!Array.isArray(vals)) throw new ApiError('استجابة تضمين غير متوقعة.', 0);
+    return l2norm(vals);
+  });
+}
+
+async function embedMany(texts){
+  if(!texts.length) return [];
+  // محاولة الدفعة (طلب واحد لكل المقاطع) — أوفر في الحصة وأسرع
+  if(SET.provider==='gemini' && texts.length>1){
+    try{
+      const reqs = texts.map(t=>{
+        const r = {model:'models/'+SET.embedModel, content:{parts:[{text:t}]}};
+        if(/embedding-(2|001)/.test(SET.embedModel)) r.outputDimensionality = Number(SET.dims);
+        return r;
+      });
+      const out = await gemCall('batchEmbedContents', {requests:reqs}, {
+        models:[SET.embedModel],
+        consume: async (res)=>{
+          const j = await res.json();
+          const embs = j?.embeddings;
+          if(Array.isArray(embs) && embs.length===texts.length && embs.every(e=>Array.isArray(e?.values)))
+            return embs.map(e=> l2norm(e.values));
+          throw new ApiError('استجابة الدفعة غير مدعومة لهذا الموديل.', 0);
+        }
+      });
+      return out;
+    }catch(e){ /* نكمل بالفردي */ }
+  }
+  const out=[];
+  const CONC = 4;
+  let i = 0;
+  async function worker(){
+    while(i < texts.length){
+      const k = i++; out[k] = await embedOne(texts[k]);
+    }
+  }
+  await Promise.all(Array.from({length: Math.min(CONC, texts.length)}, worker));
+  return out;
+}
+
+/* ------------------------------ البحث الدلالي ------------------------------ */
+function cosine(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
+
+function keywordScore(queryToks, chunk){
+  const ct = new Set(tokens(chunk.text));
+  if(!queryToks.length) return 0;
+  let hit=0;
+  for(const t of queryToks) if(ct.has(t)) hit++;
+  return hit/queryToks.length;
+}
+
+function retrieve(chunks, queryVec, questionText, topK){
+  if(!chunks.length) return [];
+  const q = tokens(questionText);
+  const scored = chunks.map(c=>{
+    const cos = c.vec ? cosine(queryVec, c.vec) : 0;
+    const kw  = keywordScore(q, c);
+    const nameHit = q.length && tokens(c.unitName).some(t=> q.includes(t)) ? 0.06 : 0;
+    return {...c, score: 0.72*cos + 0.28*kw + nameHit, cos, kw};
+  }).sort((a,b)=> b.score-a.score);
+
+  // تنويع: لا نجعل أكثر من 3 مقاطع من نفس الوحدة في الأعلى (إلا إذا لم تتوفر بدائل)
+  const out=[], perUnit={};
+  for(const c of scored){
+    const n = perUnit[c.unitId]||0;
+    if(n>=3) continue;
+    perUnit[c.unitId]=n+1; out.push(c);
+    if(out.length>=topK) break;
+  }
+  if(out.length<topK) for(const c of scored){ if(!out.includes(c)){ out.push(c); if(out.length>=topK) break; } }
+  return out;
+}
+
+/* ------------------------------ إدارة الحالة ------------------------------ */
+let STATE = { units:[], chunks:[], images:[], questions:[], selected:new Set(), lastHits:[], chat:[] };
+
+/* ------------------------------ استخراج نص من ملف ------------------------------ */
+async function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const fr = new FileReader();
+    fr.onload = ()=>{ const s=String(fr.result); res(s.slice(s.indexOf(',')+1)); };
+    fr.onerror = ()=>rej(fr.error);
+    fr.readAsDataURL(file);
+  });
+}
+async function compressImage(file, maxDim=2000, q=0.85){
+  try{
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, maxDim/Math.max(bmp.width,bmp.height));
+    const w = Math.max(1,Math.round(bmp.width*scale)), h = Math.max(1,Math.round(bmp.height*scale));
+    const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+    const g = cv.getContext('2d'); g.drawImage(bmp,0,0,w,h);
+    const url = cv.toDataURL('image/jpeg', q);
+    return { mimeType:'image/jpeg', data:url.split(',')[1] };
+  }catch(e){
+    return { mimeType:file.type||'image/jpeg', data: await fileToBase64(file) };
+  }
+}
+const EXTRACT_SYS = `أنت محرّر نصوص دقيق. مهمتك نسخ النص من الملف المرفق كما هو، دون أي تعليق أو تلخيص أو إضافة.
+قواعد:
+- انسخ كل المحتوى المرئي بالعربية وباللغات الأخرى كما هو.
+- حافظ على ترتيب الصفحات والفقرات، واجعل العناوين بعناوين Markdown (#).
+- إن كان المستند مصوّراً (scan) أو بخط اليد، فاقرأه بدقة ولا تخترع نصاً غير موجود.
+- لا تضف مقدمة ولا خاتمة ولا شرحاً. أخرج النص فقط.`;
+
+async function extractTextFromFile(file){
+  const name = file.name.toLowerCase();
+  if(/\.(txt|md|csv)$/.test(name) || file.type.startsWith('text/')){
+    return await file.text();
+  }
+  const isPdf = /\.pdf$/.test(name) || file.type==='application/pdf';
+  const isDoc = /\.docx?$/.test(name) || /wordprocessingml|msword/.test(file.type||'');
+  const isImg = file.type.startsWith('image/');
+  if(!isPdf && !isDoc && !isImg) throw new Error('صيغة غير مدعومة: '+file.name);
+
+  if(file.size > 18*1024*1024) throw new Error('الملف كبير جداً ('+Math.round(file.size/1048576)+' م.ب). الحد الأقصى 18 م.ب.');
+
+  let part;
+  if(isImg){ const c = await compressImage(file); part = {type:'image', mimeType:c.mimeType, data:c.data}; }
+  else {
+    const data = await fileToBase64(file);
+    const mime = isPdf ? 'application/pdf'
+      : (file.type || 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    part = {type:'image', mimeType:mime, data};
+  }
+  const out = await chatStream({system:EXTRACT_SYS, parts:[{type:'text',text:'استخرج نص هذا الملف كاملاً.'}, part]});
+  return out.trim();
+}
+
+/* ------------------------------ إضافة وحدة ------------------------------ */
+async function ingestUnit(name, text, sourceLabel){
+  if(!text || !text.trim()) throw new Error('لا يوجد نص في الوحدة.');
+  const chunks = chunkText(text);
+  if(!chunks.length) throw new Error('تعذّر تقسيم النص.');
+  $('#ingLog').textContent = '→ تقسيم إلى '+chunks.length+' مقطعاً…';
+  setProg('#ingProgress', 5);
+
+  const vecs = await embedMany(chunks.map(c=>c.text));
+  setProg('#ingProgress', 70);
+
+  const unitId = uid();
+  const unit = { id:unitId, name:name.trim()||'وحدة بلا اسم', source:sourceLabel||'نص',
+                 chunks:chunks.length, createdAt:Date.now() };
+  await idbPut('units', unit);
+
+  const rows = chunks.map((c,i)=>({
+    id: uid(), unitId, unitName:unit.name, section:c.section, text:c.text, vec:vecs[i], order:i
+  }));
+  await idbPutMany('chunks', rows);
+  setProg('#ingProgress', 100);
+  return unit;
+}
+
+async function refreshUnits(){
+  STATE.units = (await idbGetAll('units')).sort((a,b)=> b.createdAt-a.createdAt);
+  const box = $('#unitsList');
+  if(!STATE.units.length){ box.innerHTML = '<div class="empty">لا توجد وحدات بعد. أضف وحدة أو جرّب «تجربة سريعة».</div>'; return; }
+  box.innerHTML = STATE.units.map(u=>`
+    <div class="unit">
+      <div class="nm"><b>${esc(u.name)}</b><span>${esc(u.source)} · ${u.chunks} مقطعاً</span></div>
+      <span class="badge">${esc(u.chunks)}</span>
+      <button class="x" data-del="${esc(u.id)}" title="حذف">✕</button>
+    </div>`).join('');
+  $$('#unitsList [data-del]').forEach(b=> b.onclick = async ()=>{
+    if(!confirm('حذف الوحدة "'+(STATE.units.find(u=>u.id===b.dataset.del)?.name||'')+'"؟')) return;
+    await idbDeleteByUnit(b.dataset.del);
+    await idbDel('units', b.dataset.del);
+    refreshUnits(); toast('تم الحذف','ok');
+  });
+}
+async function loadChunks(){ STATE.chunks = await idbGetAll('chunks'); }
+
+/* ------------------------------ استخراج أسئلة الاختبار ------------------------------ */
+const Q_SYS = `أنت قارئ م precis. مهمتك تفريغ أسئلة اختبار من الصور المرفقة فقط.
+قواعد صارمة:
+- انسخ نص كل سؤال حرفياً (الأرقام، النقاط، خيارات أ/ب/ج، الصيغ).
+- تجاهل تماماً أي إجابات مكتوبة بخط اليد من الطالب، وتجاهل الاسم والتاريخ.
+- تجاهل التعليمات العامة (مثال: "أجب عن جميع الأسئلة") إلا إذا كانت جزءاً من نص السؤال.
+- إذا كانت الصفحة فيها أسئلة متعددة، اعرضها كقائمة مرقمة بهذا الشكل: 1) نص السؤال  ثم 2) ...
+- إن لم تجد أي سؤال، اكتب سطراً واحداً فقط: NO_QUESTIONS
+- لا تُحلّ الأسئلة ولا تشرحها. أخرج الأسئلة فقط.`;
+
+function parseQuestions(raw){
+  if(/NO_QUESTIONS/.test(raw)) return [];
+  const txt = raw.replace(/^الأسئلة?\s*[:：]\s*/,'').trim();
+  const out=[];
+  const re = /^\s*(?:\d{1,2})\s*[\.\)\-–:]\s*(.+)$/;
+  const lines = txt.split(/\r?\n/);
+  let cur=null;
+  for(let line of lines){
+    line = line.replace(/\s+$/,'');
+    if(!line.trim()) continue;
+    const m = line.match(re);
+    if(m){ if(cur) out.push(cur); cur = m[1].trim(); }
+    else if(cur) cur += ' ' + line.trim();
+    else out.push(line.trim());
+  }
+  if(cur) out.push(cur);
+  return out.map(s=>s.replace(/^["'«]|["'»]$/g,'').trim()).filter(s=>s.length>3);
+}
+
+/* ------------------------------ الإجابة ------------------------------ */
+const ANSWER_SYS = `أنت مساعد طالب في امتحان "مفتوح الكتاب". تُعطى مقتطفات (Fragments) مستخرجة حرفياً من وحدات المقرر الخاصة بالطالب.
+قواعد إلزامية:
+1. أجب حصرياً من المقتطفات المعطاة. لا تستخدم أي معرفة خارجية ولا تخمّن معلومات غير موجودة.
+2. إذا لم تحتوِ المقتطفات على إجابة السؤال، اكتب بوضوح: «غير موجود في الوحدات» ثم اذكر أقرب محتوى متعلق كمرجع فقط.
+3. أشِر إلى رقم المقطع في نهاية كل جملة استفدت منها بصيغة [1] أو [2].
+4. لا تكرّر نص السؤال إلا إذا كان جزءاً من الإجابة.
+5. انسخ الأرقام والمعادلات والصيغ بدقة تامة كما وردت في المقتطفات.
+6. اكتب بالعربية الفصحى الأكاديمية، بأسلوب طالب في امتحان: واضح ومباشر ومنظّم.`;
+
+function answerStyleInstruction(){
+  if(SET.answerLen==='short') return 'اكتب إجابة مختصرة تصلح للكتابة في ورقة الامتحان: من جملتين إلى أربع جمل، مع أهم نقطة أو نقاط.';
+  if(SET.answerLen==='steps') return 'اكتب الإجابة كخطوات منطقية مرقّمة (1، 2، 3...) مع شرح مختصر لكل خطوة.';
+  return 'اكتب إجابة مفصّلة ومنظّمة (عنوان قصير + فقرات أو نقاط)، تغطي كل ما في المقتطفات المتعلق بالسؤال.';
+}
+
+function buildAnswerPrompt(question, hits, history){
+  const ctx = hits.map((h,i)=> `[${i+1}] (${h.unitName} — ${h.section})\n${h.text}`).join('\n\n---\n\n');
+  const hist = history && history.length
+    ? '\n\nسياق المحادثة السابقة (استخدمه للاستمرارية فقط):\n' + history.slice(-4).map(m=>`${m.role==='user'?'الطالب':'المساعد'}: ${m.text}`).join('\n') + '\n'
+    : '';
+  return `الأسئلة: ${question}
+
+المقتطفات من وحدات المقرر:
+"""
+${ctx}
+"""
+${hist}
+اكتب الإجابة الآن.`;
+}
+
+/* ------------------------------ واجهة المستخدم ------------------------------ */
+function switchTab(name){
+  $$('nav button').forEach(b=> b.classList.toggle('on', b.dataset.tab===name));
+  $$('.panel').forEach(p=> p.classList.toggle('on', p.id==='panel-'+name));
+  $('#bar').style.display = (name==='ask') ? 'none':'block';
+  window.scrollTo({top:0});
+}
+$$('nav button').forEach(b=> b.onclick = ()=> switchTab(b.dataset.tab));
+
+/* تبويب الوحدات */
+$('#unitFile').onchange = e=>{
+  const f = e.target.files[0];
+  $('#fileName').textContent = f ? (f.name + ' · ' + Math.max(1,Math.round(f.size/1024)) + ' ك.ب') : 'لم يُحدَّد ملف';
+};
+$('#btnIngest').onclick = async ()=>{
+  const name = $('#unitName').value.trim();
+  const file = $('#unitFile').files[0];
+  const pasted = $('#unitText').value.trim();
+  if(!pasted && !file){ toast('اختر ملفاً أو الصق نصاً.','err'); return; }
+  if(!SET.apiKey){ toast('أضف مفتاح API أولاً من تبويب الإعدادات.','err'); switchTab('settings'); return; }
+  const btn = $('#btnIngest'); btn.disabled=true;
+  $('#ingLog').textContent='…';
+  setProg('#ingProgress', 2);
+  NOTIFY = (m)=>{ $('#ingLog').textContent = m; };
+  try{
+    let text = pasted, label = pasted? 'نص ملصوق' : file.name;
+    if(file){
+      $('#ingLog').textContent = '→ جارٍ قراءة الملف…';
+      setProg('#ingProgress', 10);
+      text = await extractTextFromFile(file);
+      if(!text || text.length<20) throw new Error('تعذّر استخراج نص من الملف. جرّب لصق النص يدوياً.');
+    }
+    $('#ingLog').textContent = '→ جارٍ التضمين ('+Math.round(text.length/1000)+'k حرف)…';
+    const unit = await ingestUnit(name, text, label);
+    $('#unitName').value=''; $('#unitText').value=''; $('#unitFile').value='';
+    $('#fileName').textContent='لم يُحدَّد ملف';
+    await refreshUnits();
+    setProg('#ingProgress', null);
+    $('#ingLog').textContent = '✓ تمت فهرسة «'+unit.name+'» ('+unit.chunks+' مقطعاً).';
+    toast('تمت فهرسة الوحدة','ok');
+  }catch(e){
+    setProg('#ingProgress', null);
+    const msg = friendlyError(e);
+    $('#ingLog').textContent = '✗ '+msg + (file? ' — اضغط «فهرسة الوحدة» لإعادة المحاولة (الملف ما زال محفوظاً).' : '');
+    toast(msg,'err');
+  }finally{ NOTIFY = ()=>{}; btn.disabled=false; }
+};
+
+$('#btnSample').onclick = async ()=>{
+  if(!SET.apiKey){ toast('أضف مفتاح API أولاً من تبويب الإعدادات.','err'); switchTab('settings'); return; }
+  const btn=$('#btnSample'); btn.disabled=true; setProg('#ingProgress',5);
+  const sample = `الوحدة الأولى: قوانين نيوتن
+
+Newton's Laws of Motion
+قانون نيوتن الأول: يبقى الجسم ساكناً أو متحركاً بسرعة ثابتة في خط مستقيم ما لم تؤثر عليه قوة خارجية.
+قانون نيوتن الثاني: تسارع الجسم متناسب طردياً مع القوة المحصلة المؤثرة عليه ومعاكساً لكتلته. F = m · a
+قانون نيوتن الثالث: لكل قوة ردة فعل مساوية لها في المقدار ومعاكسة لها في الاتجاه.
+
+الوحدة الثانية:Work and Energy
+العمل: هو حاصل ضرب القوة في الإزاحة في اتجاه القوة، ووحدته الجول. W = F · d · cos(θ)
+الطاقة الحركية: الطاقة possessed الجسم بسبب حركته، وتُحسب K = ½ m v²
+الطاقة الكامنة: الطاقة المخزنة نتيجة الموقع أو الشكل، مثال: m g h
+مبدأ حفظ الطاقة: الطاقة الكلية في نظام معزول تبقى ثابتة، إذ تتحول من شكل إلى آخر دون أن تُفقد أو تُخلق.
+
+الوحدة الثالثة: Waves
+الموجة: اضطراب ينتقل في وسط دون أن ينتقل الوسط نفسه.
+خصائص الموجة: السعة (أقصى إزاحة عن وضع الاتزان)، wavelength (المسافة بينcrestين متتاليين)، التردد (عدد الدورات في الثانية)، سرعة الموجة v = f · λ.`;
+  try{
+    const unit = await ingestUnit('وحدة تجريبية (نيوتن والطاقة والأمواج)', sample, 'نص تجريبي');
+    await refreshUnits(); setProg('#ingProgress',null);
+    $('#ingLog').textContent='✓ أُضيفت الوحدة التجريبية.';
+    toast('تمت إضافة الوحدة التجريبية','ok');
+  }catch(e){ setProg('#ingProgress',null); toast(friendlyError(e),'err'); }
+  finally{ btn.disabled=false; }
+};
+
+/* تبويب المساعد */
+const pending = [];   // صور الاختبار المختارة
+$('#btnCam').onclick = ()=> $('#camFile').click();
+$('#btnGal').onclick = ()=> $('#galFile').click();
+$('#camFile').onchange = e=> addImages(e.target.files, e.target);
+$('#galFile').onchange = e=> addImages(e.target.files, e.target);
+
+async function addImages(files, input){
+  for(const f of files){
+    const c = await compressImage(f, 2000, .85);
+    pending.push({...c, name:f.name});
+  }
+  input.value='';
+  renderThumbs();
+}
+function renderThumbs(){
+  $('#thumbs').innerHTML = pending.map((p,i)=>
+    `<figure><img src="data:${p.mimeType};base64,${p.data}" alt="صورة ${i+1}">
+     <figcaption data-rm="${i}">✕</figcaption></figure>`).join('');
+  $$('#thumbs [data-rm]').forEach(f=> f.onclick = ()=>{ pending.splice(+f.dataset.rm,1); renderThumbs(); });
+  $('#btnExtract').disabled = !pending.length;
+}
+
+$('#btnExtract').onclick = async ()=>{
+  if(!SET.apiKey){ toast('أضف مفتاح API أولاً.','err'); switchTab('settings'); return; }
+  if(!pending.length){ toast('صوّر الورقة أولاً.'); return; }
+  const btn=$('#btnExtract'); btn.disabled=true;
+  setProg('#exProgress',10); $('#exLog').textContent='→ جارٍ قراءة الأسئلة من الصورة…';
+  NOTIFY = (m)=>{ $('#exLog').textContent = m; };
+  try{
+    const parts = [{type:'text', text:'استخرج الأسئلة من هذه الصفحة/الصفحات.'}];
+    pending.forEach(p=> parts.push({type:'image', mimeType:p.mimeType, data:p.data}));
+    const raw = await chatStream({system:Q_SYS, parts});
+    const qs = parseQuestions(raw);
+    STATE.questions = qs; STATE.selected = new Set(qs.map((_,i)=>i));
+    renderQuestions();
+    setProg('#exProgress', null);
+    $('#exLog').textContent = qs.length? ('✓ تم العثور على '+qs.length+' سؤالاً.'): 'لم يتم العثور على أسئلة — جرّب لقطة أوضح للورقة.';
+    if(qs.length){ $('#qCard').style.display='block'; $('#ansCard').style.display='none'; }
+  }catch(e){
+    setProg('#exProgress', null);
+    const msg = friendlyError(e);
+    $('#exLog').textContent='✗ '+msg; toast(msg,'err');
+  }finally{ NOTIFY = ()=>{}; btn.disabled=false; }
+};
+
+function renderQuestions(){
+  $('#qList').innerHTML = STATE.questions.map((q,i)=>`
+    <div class="q ${STATE.selected.has(i)?'sel':''}" data-q="${i}">
+      <div class="box">${STATE.selected.has(i)?'✓':''}</div>
+      <div class="txt">${esc(q)}</div>
+    </div>`).join('');
+  $$('#qList .q').forEach(el=> el.onclick = ()=>{
+    const i = +el.dataset.q;
+    if(STATE.selected.has(i)) STATE.selected.delete(i); else STATE.selected.add(i);
+    renderQuestions(); syncAnswerBtn();
+  });
+  syncAnswerBtn(); syncSelBtn();
+}
+function syncSelBtn(){
+  const b = $('#btnAll'); if(!b) return;
+  const all = STATE.questions.length>0 && STATE.selected.size===STATE.questions.length;
+  b.textContent = all ? 'إلغاء تحديد الكل' : 'تحديد الكل';
+}
+function syncAnswerBtn(){ $('#btnAnswer').disabled = !STATE.selected.size; }
+$('#btnAnswer').onclick = ()=> answerSelected();
+$('#btnAll').onclick = ()=>{
+  if(!STATE.questions.length) return;
+  if(STATE.selected.size===STATE.questions.length) STATE.selected = new Set();
+  else STATE.selected = new Set(STATE.questions.map((_,i)=>i));
+  renderQuestions();
+};
+
+async function answerSelected(){
+  const idxs = [...STATE.selected].sort((a,b)=>a-b);
+  if(!idxs.length){ toast('اختر سؤالاً واحداً على الأقل.'); return; }
+  if(!SET.apiKey){ toast('أضف مفتاح API أولاً.'); switchTab('settings'); return; }
+  await loadChunks();
+  if(!STATE.chunks.length){ toast('لا توجد وحدات مفهرسة — أضف وحدة أولاً.','err'); return; }
+
+  $('#ansCard').style.display='block';
+  $('#ansText').innerHTML = '<span class="spin"></span> جارٍ البحث في وحداتك…';
+  $('#srcList').innerHTML=''; $('#ansChips').innerHTML='';
+  $('#ansText').scrollIntoView({behavior:'smooth', block:'center'});
+
+  let allAnswers = '';
+  NOTIFY = (m)=>{ $('#ansText').innerHTML = esc(allAnswers) + '<br><small style="color:#d29922">'+esc(m)+'</small>'; };
+  const questions = idxs.map(i=> STATE.questions[i]);
+  try{
+    // تضمين كل الأسئلة في طلب واحد (توفير الحصة على الطبقة المجانية)
+    const qvecs = await embedMany(questions);
+    const hitLists = qvecs.map((v,i)=> retrieve(STATE.chunks, v, questions[i], Number(SET.topK)||6));
+
+    if(SET.batchAnswer && questions.length>1){
+      let g=0;
+      const perQ = hitLists.map(hits=> hits.map(h=>({...h, gnum: ++g})));
+      const allHits = perQ.flat();
+      STATE.lastHits = allHits;
+      const blocks = perQ.map((hits,i)=>{
+        const ctx = hits.map(h=>`[${h.gnum}] (${h.unitName} — ${h.section})\n${h.text}`).join('\n\n---\n\n');
+        return `### السؤال ${i+1}: ${questions[i]}\nالمقتطفات:\n"""\n${ctx}\n"""`;
+      }).join('\n\n========================================\n\n');
+      const prompt = `أجب عن كل الأسئلة التالية. لكل سؤال: اكتب سطر «السؤال N:» ثم إجابته، واستشهد بأرقام المقتطفات [n].\n\n${blocks}\n\n${answerStyleInstruction()}`;
+      $('#ansText').innerHTML = '<span class="spin"></span> جارٍ توليد إجابات '+questions.length+' أسئلة في طلب واحد…';
+      const ans = await chatStream({
+        system: ANSWER_SYS + '\n' + answerStyleInstruction(),
+        parts:[{type:'text', text:prompt}],
+        onDelta: t=>{ $('#ansText').innerHTML = esc(allAnswers + t); }
+      });
+      allAnswers += ans;
+      renderSources(allHits);
+    } else {
+      for(let n=0; n<questions.length; n++){
+        const question = questions[n];
+        const hits = hitLists[n];
+        STATE.lastHits = hits;
+        $('#ansText').innerHTML = esc(allAnswers) + '<span class="spin"></span> جارٍ توليد الإجابة ('+(n+1)+'/'+questions.length+')…';
+        const prompt = buildAnswerPrompt(question, hits, STATE.chat);
+        const ans = await chatStream({
+          system: ANSWER_SYS + '\n' + answerStyleInstruction(),
+          parts:[{type:'text', text:prompt}],
+          onDelta: t=>{ $('#ansText').innerHTML = esc(allAnswers + t); }
+        });
+        allAnswers += (questions.length>1? ('\n\n───── السؤال '+(n+1)+' ─────\n') : '') + ans;
+        STATE.chat.push({role:'user', text:question});
+        STATE.chat.push({role:'assistant', text:ans});
+        renderSources(hits);
+      }
+    }
+    $('#ansText').innerHTML = esc(allAnswers);
+    const used = SET.lastUsedModel ? ' · عبر «'+SET.lastUsedModel+'»' : '';
+    toast('تم الإجابة'+used,'ok');
+  }catch(e){
+    $('#ansText').innerHTML = esc(allAnswers) + '\n\n✗ ' + friendlyError(e);
+    toast(friendlyError(e),'err');
+  }finally{
+    NOTIFY = ()=>{};
+  }
+}
+
+function renderSources(hits){
+  $('#srcList').innerHTML = (hits||[]).map((h,i)=>`
+    <div class="src"><b>[${i+1}] ${esc(h.unitName)} — ${esc(h.section)}</b><p>${esc(h.text.slice(0,600))}${h.text.length>600?'…':''}</p></div>
+  `).join('');
+  $('#ansChips').innerHTML = (hits||[]).map((h,i)=>`<span class="chip">[${i+1}] ${esc(h.unitName)}</span>`).join('');
+}
+
+$('#btnCopy').onclick = async ()=>{
+  const t = $('#ansText').innerText;
+  try{ await navigator.clipboard.writeText(t); toast('تم نسخ الإجابة','ok'); }
+  catch(e){ toast('تعذّر النسخ','err'); }
+};
+$('#btnAgain').onclick = ()=>{
+  SET.answerLen = SET.answerLen==='full' ? 'short' : 'full';
+  saveSettings(); applySettingsToUI();
+  if(STATE.selected.size) answerSelected();
+};
+
+/* متابعة */
+$('#btnFollow').onclick = async ()=>{
+  const q = $('#followUp').value.trim();
+  if(!q) return;
+  if(!STATE.lastHits.length){ toast('أجب عن سؤال أولاً.','err'); return; }
+  $('#followUp').value='';
+  $('#followAns').innerHTML='<span class="spin"></span> …';
+  try{
+    const hits = STATE.lastHits;
+    const ctx = hits.map((h,i)=>`[${i+1}] (${h.unitName} — ${h.section})\n${h.text}`).join('\n\n---\n\n');
+    const out = await chatStream({
+      system: ANSWER_SYS,
+      parts:[{type:'text', text:`المقتطفات:\n"""\n${ctx}\n"""\n\nسؤال المتابعة: ${q}\n\nالإجابة:`}],
+      onDelta: t=> $('#followAns').innerHTML = esc($('#followAns').dataset.acc = ($('#followAns').dataset.acc||'') + t)
+    });
+    $('#followAns').innerHTML = esc(out);
+  }catch(e){ $('#followAns').innerHTML = esc('✗ '+friendlyError(e)); }
+};
+
+/* شريط سفلي: اسأل مباشرة */
+$('#btnGoAsk').onclick = ()=> switchTab('ask');
+$('#btnQuick').onclick = async ()=>{
+  switchTab('ask');
+  const q = prompt('اكتب السؤال:');
+  if(!q || !q.trim()) return;
+  STATE.questions = [q.trim()];
+  STATE.selected = new Set([0]);
+  renderQuestions();
+  $('#qCard').style.display='block';
+  answerSelected();
+};
+
+/* تبويب الإعدادات */
+$('#prov').onchange = e=>{
+  SET.provider = e.target.value;
+  if(SET.provider==='gemini'){ SET.chatModel='gemini-3.8-flash'; SET.embedModel='gemini-embedding-2'; }
+  else { SET.chatModel='gpt-4.1'; SET.embedModel='text-embedding-3-large'; }
+  saveSettings(); applySettingsToUI();
+};
+$('#apiKey').oninput   = e=>{ SET.apiKey = e.target.value.trim(); saveSettings(); updateStatus(); };
+$('#baseUrl').oninput  = e=>{ SET.baseUrl = e.target.value.trim(); saveSettings(); };
+$('#chatModel').oninput= e=>{ SET.chatModel = e.target.value.trim(); saveSettings(); updateStatus(); };
+$('#embedModel').oninput=e=>{ SET.embedModel=e.target.value.trim(); saveSettings(); };
+$('#fallbackModels').oninput = e=>{ SET.fallbackModels = e.target.value.trim(); saveSettings(); };
+$('#fallbackEmbedModels').oninput = e=>{ SET.fallbackEmbedModels = e.target.value.trim(); saveSettings(); };
+$('#maxRetries').onchange = e=>{ SET.maxRetries = clamp(+e.target.value||5,1,8); saveSettings(); };
+$('#dims').onchange     = e=>{ SET.dims = +e.target.value; saveSettings(); };
+$('#topK').onchange    = e=>{ SET.topK = clamp(+e.target.value||6, 2, 12); saveSettings(); };
+$$('#lenTog button').forEach(b=> b.onclick = ()=>{ SET.answerLen=b.dataset.len; saveSettings(); applySettingsToUI(); });
+$$('#batchTog button').forEach(b=> b.onclick = ()=>{ SET.batchAnswer = (b.dataset.batch==='1'); saveSettings(); applySettingsToUI(); });
+
+/* قائمة النماذج المتاحة فعلياً لمفتاح المستخدم — الأدق لتشخيص أخطاء 404/403 */
+$('#btnListModels').onclick = async ()=>{
+  const log = $('#modelsLog');
+  if(!SET.apiKey){ log.textContent='✗ لا يوجد مفتاح API.'; return; }
+  if(SET.provider!=='gemini'){ log.textContent='هذه الميزة متاحة لمزوّد Gemini فقط.'; return; }
+  log.textContent='… جارٍ جلب قائمة النماذج…';
+  try{
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',
+      {headers:{'x-goog-api-key':SET.apiKey}});
+    if(!res.ok) throw await apiError(res);
+    const j = await res.json();
+    const names = [...new Set((j.models||[])
+      .map(m=> String(m.name||'').replace(/^models\//,''))
+      .filter(n=>/^gemini/i.test(n) && !/embedding|tts|image|live|nano|veo|imagen|pro-preview/i.test(n)))].sort();
+    if(!names.length){ log.textContent='لم يُرجع الخادم أي نموذج (تحقق من المفتاح).'; return; }
+    log.innerHTML = 'النماذج المتاحة لمفتاحك (<b>'+names.length+'</b>):<br>' +
+      names.map(n=> n===SET.chatModel ? '● <b>'+esc(n)+'</b> ← المضبوط' : '○ '+esc(n)).join('<br>');
+    toast('تم جلب '+names.length+' نموذجاً','ok');
+  }catch(e){ log.textContent='✗ '+friendlyError(e); }
+};
+
+$('#btnTest').onclick = async ()=>{
+  const log = $('#testLog');
+  if(!SET.apiKey){ log.textContent='✗ لا يوجد مفتاح API.'; return; }
+  log.textContent='… جارٍ الاختبار…';
+  try{
+    const v = await embedOne('اختبار الاتصال');
+    log.textContent='✓ الاتصال يعمل. التضمين: '+v.length+' بُعد. الموديل: '+SET.chatModel+' / '+SET.embedModel;
+    toast('الاتصال ناجح','ok');
+  }catch(e){ log.textContent='✗ '+e.message; toast('فشل الاتصال','err'); }
+};
+
+/* نسخ احتياطي */
+$('#btnExport').onclick = async ()=>{
+  const units = await idbGetAll('units'), chunks = await idbGetAll('chunks');
+  const blob = new Blob([JSON.stringify({v:1, units, chunks, at:Date.now()})], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'openbook-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+};
+$('#btnImport').onclick = ()=> $('#importFile').click();
+$('#importFile').onchange = async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const data = JSON.parse(await f.text());
+    if(!Array.isArray(data.units)||!Array.isArray(data.chunks)) throw new Error('ملف غير صالح');
+    for(const u of data.units) await idbPut('units', u);
+    for(const c of data.chunks) await idbPut('chunks', c);
+    await refreshUnits(); toast('تم الاستيراد','ok');
+  }catch(err){ toast('فشل الاستيراد: '+err.message,'err'); }
+  e.target.value='';
+};
+$('#btnWipe').onclick = async ()=>{
+  if(!confirm('حذف جميع الوحدات والمقاطع نهائياً؟')) return;
+  await idbClear('units'); await idbClear('chunks'); await idbClear('chat');
+  await refreshUnits(); toast('تم الحذف','ok');
+};
+
+/* ------------------------------ إقلاع ------------------------------ */
+loadSettings();
+refreshUnits();
+switchTab('units');
+
+/* تسجيل Service Worker (يعمل فقط عند الاستضافة عبر http/https) */
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
